@@ -51,39 +51,39 @@ Here's a draft design proposal for the protocol and message flow for a customer 
 }
 ```
 
-4. The Host Provider Server processes the bid and returns a `bidResponse` message indicating whether the bid was successful or not.
+4. The Host Provider Server processes the bid and returns a `bidResponse` message indicating whether the bid was successful or not. If the bid is not immediately accepted or rejected by the host provider, it is placed in a queue to wait for other possible bids until a timer runs out.
 
 ```json
 {
     "type": "bidResponse",
     "data": {
-        "status": "success"
+        "status": "pending"
     }
 }
 ```
 
-5. If the bid was successful, the customer can then send a `reserve` message to confirm their reservation of the compute resources.
+5. If the bid was successful or pending, the customer can then send a `reserve` message to confirm their reservation of the compute resources. This message can include additional information such as which VM image to use and an Ansible script to automatically customize their VM.
 
 ```json
 {
     "type": "reserve",
     "data": {
-        "providerId": 1
+        "providerId": 1,
+        <VMImage>ubuntu-20.04</VMImage>,
+        <AnsibleScript>...</AnsibleScript>
     }
 }
 ```
 
-6. The Host Provider Server processes the reservation and returns a `reserveResponse` message containing details of the reserved compute resources.
+6. The Host Provider Server processes the reservation and returns a `reserveResponse` message containing details of the reserved compute resources. This includes information on how to connect to their VM using WireGuard VPN.
 
 ```json
 {
     "type": "reserveResponse",
-    "data": {
-        "providerId": 1,
-        <IPAddress>4</IPAddress>,
-        <IPAddress>22</IPAddress>,
-        <IPAddress>ssh</IPAddress>
-    }
+    <WireGuardConfig>...</WireGuardConfig>,
+    <IPAddress>4</IPAddress>,
+    <IPAddress>22</IPAddress>,
+    <IPAddress>ssh</IPAddress>
 }
 ```
 
